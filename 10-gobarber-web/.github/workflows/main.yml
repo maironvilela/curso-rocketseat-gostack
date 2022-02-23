@@ -1,0 +1,36 @@
+name: s3 deployment
+
+on:
+  push:
+    branches: [master] # the branch we want this to run on
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+
+      - name: Node setup
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12
+
+      - name: Configure AWS
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: sa-east-1
+
+      - name: yarn install
+        run: yarn
+
+      - name: build
+        run: yarn build
+
+      - name: copy files to s3
+        run: aws s3 sync ./build s3://gobarberwebs3.mvsystems.com.br
+
+
